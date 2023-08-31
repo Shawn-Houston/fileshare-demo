@@ -54,7 +54,7 @@ spec:
   source:
     type: Git
     git:
-      uri: 'http://gitlab.libvirt8/shouston/php-test.git'
+      uri: 'https://github.com/Shawn-Houston/fileshare-demo.git'
   triggers:
   - type: ImageChange
   - type: ConfigChange
