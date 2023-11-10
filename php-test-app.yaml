@@ -21,7 +21,9 @@ metadata:
   annotations:
     description: Keeps track of changes in the application image
   name: php-test-git
-spec: {}
+spec:
+  lookupPolicy:
+    local: true
 ...
 ---
 kind: BuildConfig
@@ -61,8 +63,8 @@ spec:
   runPolicy: Serial
 ...
 ---
-kind: DeploymentConfig
-apiVersion: apps.openshift.io/v1
+kind: Deployment
+apiVersion: apps/v1
 metadata:
   name: php-test-git
   labels:
@@ -73,32 +75,12 @@ metadata:
     app.kubernetes.io/part-of: php-test-git-app
     app.openshift.io/runtime: php
 spec:
-  strategy:
-    type: Rolling
-    rollingParams:
-      updatePeriodSeconds: 1
-      intervalSeconds: 1
-      timeoutSeconds: 600
-      maxUnavailable: 25%
-      maxSurge: 25%
-    resources: {}
-    activeDeadlineSeconds: 21600
-  triggers:
-    - type: ImageChange
-      imageChangeParams:
-        automatic: true
-        containerNames:
-          - php-test-git
-        from:
-          kind: ImageStreamTag
-          name: 'php-test-git:latest'
-    - type: ConfigChange
   replicas: 1
   revisionHistoryLimit: 10
-  test: false
   selector:
-    app: php-test-git
-    deploymentconfig: php-test-git
+    matchLabels:
+      app: php-test-git
+      deploymentconfig: php-test-git
   template:
     metadata:
       creationTimestamp: null
@@ -112,6 +94,7 @@ spec:
             claimName: webroot
       containers:
         - name: php-test-git
+          image: php-test-git:latest
           ports:
             - containerPort: 8080
               protocol: TCP
@@ -124,6 +107,14 @@ spec:
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+              - ALL
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst
