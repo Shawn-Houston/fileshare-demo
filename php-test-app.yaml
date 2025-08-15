@@ -169,4 +169,7 @@ spec:
   port:
     targetPort: 8080-tcp
   wildcardPolicy: None
+  tls:
+    termination: Edge
+    insecureEdgeTerminationPolicy: Redirect # Redirects HTTP traffic to HTTPS
 ...
